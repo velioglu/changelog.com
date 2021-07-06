@@ -12,6 +12,9 @@
     <img src='<%= Routes.static_url(@conn, "/images/content/sponsors/grafana-dark.svg") %>' alt="Grafana Cloud">
   </div>
   <div class="logo_grid-item">
+    <img src='<%= Routes.static_url(@conn, "/images/content/sponsors/fly-dark.svg") %>' alt="Fly">
+  </div>
+  <div class="logo_grid-item">
     <img src='<%= Routes.static_url(@conn, "/images/content/sponsors/render-dark.svg") %>' alt="Render">
   </div>
   <div class="logo_grid-item">
@@ -55,9 +58,6 @@
   </div>
   <div class="logo_grid-item">
     <img src='<%= Routes.static_url(@conn, "/images/content/sponsors/snowplow-dark.svg") %>' alt="Snowplow">
-  </div>
-  <div class="logo_grid-item">
-    <img src='<%= Routes.static_url(@conn, "/images/content/sponsors/cast-dark.svg") %>' alt="Cast">
   </div>
   <div class="logo_grid-item">
     <img src='<%= Routes.static_url(@conn, "/images/content/sponsors/algolia-dark.svg") %>' alt="Algolia">
