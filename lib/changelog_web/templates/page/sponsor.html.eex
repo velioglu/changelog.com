@@ -124,7 +124,7 @@
 
   <section class="marketing-section marketing-section--dark">
     <header class="marketing-section-header">
-      <h3>Developers around the world</h3>
+      <h3>All around the world</h3>
       <h2>Reach developers defining the future of software</h2>
       <p>Our audience is the builders, leaders, and planners defining the future of software.</p>
     </header>
@@ -133,19 +133,19 @@
       <div class="bar_graph">
         <div class="bar_graph-item">
           <div class="bar_graph-item-percentage" style="height: 30%; width: 22%;">11%</div>
-          <div class="bar_graph-item-label">CEO / Execs</div>
+          <div class="bar_graph-item-label">CEO / Founders</div>
         </div>
         <div class="bar_graph-item">
           <div class="bar_graph-item-percentage" style="height: 50%; width: 40%;">27%</div>
-          <div class="bar_graph-item-label">Frontend / UI</div>
+          <div class="bar_graph-item-label">Fullstack / JavaScript</div>
         </div>
         <div class="bar_graph-item">
           <div class="bar_graph-item-percentage" style="height: 100%; width: 90%;">43%</div>
-          <div class="bar_graph-item-label">Backend / Engineer</div>
+          <div class="bar_graph-item-label">Developer / Engineer</div>
         </div>
         <div class="bar_graph-item">
           <div class="bar_graph-item-percentage" style="height: 34%; width: 27%;">12%</div>
-          <div class="bar_graph-item-label">CTO / Engineering</div>
+          <div class="bar_graph-item-label">CTO / Leadership</div>
         </div>
         <div class="bar_graph-item">
           <div class="bar_graph-item-percentage" style="height: 22%; width: 18%">7%</div>
