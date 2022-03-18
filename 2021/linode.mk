@@ -1,18 +1,18 @@
 # https://www.linode.com/docs/kubernetes/deploy-and-manage-lke-cluster-with-api-a-tutorial/
 LKE_CONFIGS := $(XDG_CONFIG_HOME)/kube/configs
-LKE_NAME ?= prod
+LKE_NAME ?= kcert
 
 # This has been already created & will be enabled on: eval "$(make env)"
 
-LKE_LABEL ?= $(LKE_NAME)-20210428
+LKE_LABEL ?= $(LKE_NAME)-2022-03-18
 export LKE_LABEL
 env::
 	@echo 'export LKE_LABEL=$(LKE_LABEL)'
 # us-east, the only US region with all the bells & whistles in 2021.03:
 # Linodes, NodeBalancers, Block Storage, Object Storage, GPU Linodes, Kubernetes
 LKE_REGION ?= us-east
-LKE_VERSION ?= 1.20
-LKE_NODE_TYPE ?= g6-dedicated-32
+LKE_VERSION ?= 1.22
+LKE_NODE_TYPE ?= g6-dedicated-4
 LKE_NODE_COUNT ?= 1
 
 ### HOW LONG DOES IT TAKE FOR EVERYTHING TO RESTORE IF THE VM GETS DELETED?
@@ -193,7 +193,7 @@ ifneq ($(IS_KUBECONFIG_LKE_CONFIG), $(LKE_CONFIGS))
 endif
 
 KUBECTL_RELEASES := https://github.com/kubernetes/kubernetes/releases
-KUBECTL_VERSION = $(LKE_VERSION).5
+KUBECTL_VERSION = $(LKE_VERSION).8
 KUBECTL_BIN := kubectl-$(KUBECTL_VERSION)-$(platform)-amd64
 KUBECTL_URL := https://storage.googleapis.com/kubernetes-release/release/v$(KUBECTL_VERSION)/bin/$(platform)/amd64/kubectl
 KUBECTL := $(LOCAL_BIN)/$(KUBECTL_BIN)

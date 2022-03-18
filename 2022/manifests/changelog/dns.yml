@@ -118,3 +118,16 @@ spec:
     recordType: A
     targets:
       - ${PUBLIC_IPv4}
+---
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: kcert-2022-03-18.changelog.com
+  namespace: ${NAMESPACE}
+spec:
+  endpoints:
+  - dnsName: kcert-2022-03-18.changelog.com
+    recordTTL: ${DNS_TTL}
+    recordType: A
+    targets:
+      - 170.187.131.226

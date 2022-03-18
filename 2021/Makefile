@@ -50,6 +50,7 @@ include $(CURDIR)/cert-manager.mk
 include $(CURDIR)/ingress-nginx.mk
 include $(CURDIR)/local-path-provisioner.mk
 include $(CURDIR)/keel.mk
+include $(CURDIR)/kcert.mk
 include $(CURDIR)/changelog.mk
 
 define MAKE_TARGETS

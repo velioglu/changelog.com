@@ -1,0 +1,133 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kcert
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kcert
+  namespace: kcert
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kcert
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list", "create", "update", "patch"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kcert
+subjects:
+- kind: ServiceAccount
+  name: kcert
+  namespace: kcert
+roleRef:
+  kind: ClusterRole
+  name: kcert
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kcert
+  namespace: kcert
+rules:
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses"]
+  verbs: ["get", "list", "create", "delete", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kcert
+  namespace: kcert
+subjects:
+- kind: ServiceAccount
+  name: kcert
+  namespace: kcert
+roleRef:
+  kind: Role
+  name: kcert
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kcert
+  namespace: kcert
+  labels:
+    app: kcert
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kcert
+  template:
+    metadata:
+      labels:
+        app: kcert
+    spec:
+      serviceAccountName: kcert
+      containers:
+      - name: kcert
+        image: nabsul/kcert:v1.0.0
+        ports:
+        - containerPort: 80
+          name: http
+        env:
+        - name: ACME__DIRURL
+          value: ${ACME__DIRURL} # https://acme-staging-v02.api.letsencrypt.org/directory or https://acme-v02.api.letsencrypt.org/directory
+        - name: ACME__TERMSACCEPTED
+          value: "${ACME__TERMSACCEPTED}" # You must set this to "true" to indicate your acceptance of Let's Encrypt's terms of service (https://letsencrypt.org/documents/LE-SA-v1.2-November-15-2017.pdf)
+        - name: ACME__EMAIL
+          value: ${ACME__EMAIL} # Your email address for Let's Encrypt and email notifications
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kcert
+  namespace: kcert
+  labels:
+    app: kcert
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+  selector:
+    app: kcert
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kcert-2022-03-18
+  namespace: kcert
+  labels:
+    kcert.dev/ingress: "managed"
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  tls:
+  - hosts:
+    - kcert-2022-03-18.changelog.com
+    secretName: kcert-2022-03-18
+  rules:
+  - host: kcert-2022-03-18.changelog.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: kcert
+            port:
+              number: 80
