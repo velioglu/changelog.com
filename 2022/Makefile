@@ -43,6 +43,7 @@ include $(CURDIR)/crossplane.mk
 include $(CURDIR)/metrics-server.mk
 include $(CURDIR)/honeycomb-agent.mk
 include $(CURDIR)/local-path-provisioner.mk
+include $(CURDIR)/merkely.mk
 include $(CURDIR)/external-dns.mk
 include $(CURDIR)/cert-manager.mk
 include $(CURDIR)/ingress-nginx.mk
