@@ -72,12 +72,12 @@ $(DAGGER_ENV)/ship_it: | dagger-init
 	$(DAGGER_CTX) new ship_it --package $(CURDIR)/dagger/prod_image
 	$(DAGGER_CTX) input dir app_src . $(shell $(_convert_dockerignore_to_excludes)) --exclude deps --exclude _build --exclude dagger --environment ship_it
 	$(DAGGER_CTX) input text dockerhub_username $(DOCKERHUB_USERNAME) --environment ship_it
-	$(DAGGER_CTX) input secret dockerhub_password $(DOCKERHUB_PASSWORD) --environment ship_it
+	@$(DAGGER_CTX) input secret dockerhub_password $(DOCKERHUB_PASSWORD) --environment ship_it
 	$(DAGGER_CTX) input text app_version $(APP_VERSION) --environment ship_it
 	$(DAGGER_CTX) input text build_url $(BUILD_URL) --environment ship_it
 	$(DAGGER_CTX) input text build_version $(BUILD_VERSION) --environment ship_it
 	$(DAGGER_CTX) input socket docker_socket $(DOCKER_SOCKET) --environment ship_it
-ifneq (,$(DOCKER_HOST))
+ifneq (,$(findstring $(DOCKER_HOST), tcp://))
 	$(DAGGER_CTX) input text docker_host $(DOCKER_HOST) --environment ship_it
 endif
 	$(DAGGER_CTX) input text git_author $(GITHUB_ACTOR) --environment ship_it
