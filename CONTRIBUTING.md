@@ -193,7 +193,6 @@ A pre-configured Codespace can be launched for this repo by following the instru
 
 ```console
 # CONFIGURE APP
-mix deps.get
 mix ecto.setup
 
 # CONFIGURE STATIC ASSETS

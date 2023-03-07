@@ -61,6 +61,40 @@ func (Image) Runtime(ctx context.Context) {
 		Publish()
 }
 
+// Build & publish the Codespaces image
+func (Image) Codespaces(ctx context.Context) {
+	defer sysexit.Handle()
+
+	dag, err := dagger.Connect(ctx, dagger.WithLogOutput(os.Stderr))
+	if err != nil {
+		panic(sysexit.Unavailable(err))
+	}
+	defer dag.Close()
+
+	build := &Build{
+		ctx:       ctx,
+		dag:       dag,
+		container: dag.Container(dagger.ContainerOpts{Platform: RuntimePlatform}).Pipeline("image"),
+	}
+
+	build.
+		Elixir().
+		WithAptPackages().
+		WithGit().
+		WithGo().
+		WithImagemagick().
+		WithCmarkPrerequisites().
+		WithInotifyTools().
+		WithPostgreSQLClient().
+		WithDevDeps().
+		WithTestDeps().
+		WithNodejs().
+		WithYarn().
+		WithAssets().
+		OK().
+		Publish()
+}
+
 type Build struct {
 	ctx       context.Context
 	dag       *dagger.Client
