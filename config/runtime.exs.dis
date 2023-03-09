@@ -1,0 +1,112 @@
+import Config
+
+# config/runtime.exs is executed for all environments, including
+# during releases. It is executed after compilation and before the
+# system starts, so it is typically used to load production configuration
+# and secrets from environment variables or elsewhere. Do not define
+# any compile-time configuration in here, as it won't be applied.
+# The block below contains prod specific runtime configuration.
+
+if config_env() == :prod do
+  # The secret key base is used to sign/encrypt cookies and other secrets.
+  # A default value is used in config/dev.exs and config/test.exs but you
+  # want to use a different value for prod and you most likely don't want
+  # to check this value into version control, so we use an environment
+  # variable instead.
+  secret_key_base =
+    System.get_env("SECRET_KEY_BASE") ||
+      raise """
+      environment variable SECRET_KEY_BASE must be set.
+      You can generate one by calling: mix phx.gen.secret
+      """
+
+  db_password =
+    SecretOrEnv.get("DB_PASS") ||
+      raise """
+      environment variable DB_PASS must be set.
+      """
+
+  static_url_host = System.get_env("STATIC_URL_HOST", "cdn.changelog.com")
+
+  config :changelog, ChangelogWeb.Endpoint,
+    http: [port: System.get_env("HTTP_PORT", "4000")],
+    url: [
+      scheme: System.get_env("URL_SCHEME", "https"),
+      host: System.get_env("URL_HOST", "changelog.com"),
+      port: System.get_env("URL_PORT", "443")
+    ],
+    static_url: [
+      scheme: System.get_env("STATIC_URL_SCHEME", "https"),
+      host: static_url_host,
+      port: System.get_env("STATIC_URL_PORT", "443"),
+      path: "/static"
+    ],
+    secret_key_base: secret_key_base
+
+  if System.get_env("HTTPS") do
+    config :changelog, ChangelogWeb.Endpoint,
+      https: [
+        port: System.get_env("HTTPS_PORT", "443"),
+        cipher_suite: :strong,
+        otp_app: :changelog,
+        certfile: System.get_env("HTTPS_CERTFILE"),
+        keyfile: System.get_env("HTTPS_KEYFILE")
+      ]
+  end
+
+  config :changelog, Changelog.Repo,
+    database: System.get_env("DB_NAME", "changelog"),
+    hostname: System.get_env("DB_HOST", "db"),
+    password: SecretOrEnv.get("DB_PASS"),
+    username: System.get_env("DB_USER", "postgres")
+
+  config :changelog, Changelog.Mailer,
+    username: SecretOrEnv.get("CM_SMTP_TOKEN"),
+    password: SecretOrEnv.get("CM_SMTP_TOKEN")
+
+  config :changelog,
+    buffer_token: SecretOrEnv.get("BUFFER_TOKEN"),
+    cm_api_token: Base.encode64("#{SecretOrEnv.get("CM_API_TOKEN")}:x"),
+    github_api_token: SecretOrEnv.get("GITHUB_API_TOKEN"),
+    hn_user: SecretOrEnv.get("HN_USER"),
+    hn_pass: SecretOrEnv.get("HN_PASS"),
+    mastodon_client_id: SecretOrEnv.get("MASTODON_CLIENT_ID"),
+    mastodon_client_secret: SecretOrEnv.get("MASTODON_CLIENT_SECRET"),
+    mastodon_api_token: SecretOrEnv.get("MASTODON_API_TOKEN"),
+    notion_api_token: SecretOrEnv.get("NOTION_API_TOKEN"),
+    plusplus_slug: SecretOrEnv.get("PLUSPLUS_SLUG"),
+    turnstile_secret_key: SecretOrEnv.get("TURNSTILE_SECRET_KEY"),
+    slack_invite_api_token: SecretOrEnv.get("SLACK_INVITE_API_TOKEN"),
+    slack_app_api_token: SecretOrEnv.get("SLACK_APP_API_TOKEN"),
+    typesense_url: SecretOrEnv.get("TYPESENSE_URL"),
+    typesense_api_key: SecretOrEnv.get("TYPESENSE_API_KEY"),
+    # 60 = one minute, 3600 = one hour, 86,400 = one day, 604,800 = one week, 31,536,000 = one year
+    cdn_cache_control_s3: SecretOrEnv.get("CDN_CACHE_CONTROL_S3", "max-age=31536000, stale-while-revalidate=3600, stale-if-error=86400"),
+    cdn_cache_control_app: SecretOrEnv.get("CDN_CACHE_CONTROL_APP", "max-age=60, stale-while-revalidate=60, stale-if-error=604800")
+
+  config :shopify,
+    api_key: SecretOrEnv.get("SHOPIFY_API_KEY"),
+    password: SecretOrEnv.get("SHOPIFY_API_PASSWORD")
+
+  config :ex_aws,
+    access_key_id: SecretOrEnv.get("AWS_ACCESS_KEY_ID"),
+    secret_access_key: SecretOrEnv.get("AWS_SECRET_ACCESS_KEY"),
+    region: SecretOrEnv.get("AWS_REGION")
+
+  # in prod we point waffle to the CDN, just like we tell our own endpoint
+  config :waffle,
+    asset_host: "https://#{static_url_host}",
+    bucket: SecretOrEnv.get("AWS_ASSETS_BUCKET")
+
+  config :ueberauth, Ueberauth.Strategy.Github.OAuth,
+    client_id: SecretOrEnv.get("GITHUB_CLIENT_ID"),
+    client_secret: SecretOrEnv.get("GITHUB_CLIENT_SECRET")
+
+  config :ueberauth, Ueberauth.Strategy.Twitter.OAuth,
+    consumer_key: SecretOrEnv.get("TWITTER_CONSUMER_KEY"),
+    consumer_secret: SecretOrEnv.get("TWITTER_CONSUMER_SECRET")
+
+  config :algolia,
+    application_id: SecretOrEnv.get("ALGOLIA_APPLICATION_ID"),
+    api_key: SecretOrEnv.get("ALGOLIA_API_KEY")
+end

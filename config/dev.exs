@@ -1,8 +1,7 @@
 import Config
 
-port = 4000
 config :changelog, ChangelogWeb.Endpoint,
-  http: [port: port],
+  http: [port: 4000],
   url: [host: System.get_env("HOST", "localhost")],
   check_origin: false,
   static_url: [path: "/static"],
@@ -19,7 +18,7 @@ config :changelog, ChangelogWeb.Endpoint,
 # "CODESPACES_WEB" is manually set by devs, the other env vars are set by Codespaces automatically
 # https://docs.github.com/en/codespaces/developing-in-codespaces/default-environment-variables-for-your-codespace
 if System.get_env("CODESPACES_WEB") do
-  codespaces_host = "#{System.get_env("CODESPACE_NAME")}-#{port}.#{System.get_env("GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN")}"
+  codespaces_host = "#{System.get_env("CODESPACE_NAME")}-4000.#{System.get_env("GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN")}"
 
   config :changelog, ChangelogWeb.Endpoint,
     static_url: [host: codespaces_host, path: "/static", port: 80]

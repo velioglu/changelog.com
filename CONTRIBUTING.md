@@ -144,11 +144,9 @@ mix test
     - _Alternatively_, build the image locally via: `cd magefiles && go run main.go image:runtime`
 
 After you confirm that the image builds successfully:
-1. Update `docker/production.Dockerfile` with new image tag
-2. Update `2021/dagger/prod_image/main.cue` with new image tag
-3. Update `.devcontainer/docker-compose.yml` with new image tag
-4. Ensure that Elixir minor version in `mix.exs` is accurate
-5. Update Elixir, Erlang/OTP & Node.js version in `CONTRIBUTING.md` (this file)
+1. Update `.devcontainer/docker-compose.yml` with new image tag
+2. Ensure that Elixir minor version in `mix.exs` is accurate
+3. Update Elixir, Erlang/OTP & Node.js version in `CONTRIBUTING.md` (this file)
 
 Commit and push everything, then wait for all GitHub Actions checks to go green
 ✅ . At this point, one of the maintainers will review, approve & merge this
