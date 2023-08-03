@@ -3,9 +3,9 @@ package image
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"dagger.io/dagger"
-	"github.com/thechangelog/changelog.com/magefiles/env"
 	"github.com/thechangelog/changelog.com/magefiles/sysexit"
 	"github.com/thechangelog/changelog.com/magefiles/tools"
 )
@@ -45,19 +45,15 @@ func (image *Image) Pipeline(name string) *Image {
 }
 
 func (image *Image) OK() *Image {
-	_, err := image.container.ExitCode(image.ctx)
+	_, err := image.container.Sync(image.ctx)
 	mustCreate(err)
 
 	return image
 }
 
-func (image *Image) Env(key string) *env.Env {
-	return env.Get(image.ctx, image.dag.Host(), key)
-}
-
 func (image *Image) Publish(reference string) *Image {
-	registryPassword := image.Env("GHCR_PASSWORD")
-	if registryPassword.Value() == "" {
+	ghcrPassword := os.Getenv("GHCR_PASSWORD")
+	if ghcrPassword == "" {
 		fmt.Printf(
 			"\n👮 Skip publishing %s\n"+
 				"👮 GHCR_PASSWORD env var is required to publish this image\n",
@@ -66,15 +62,15 @@ func (image *Image) Publish(reference string) *Image {
 		return image
 	}
 
-	githubRepo := image.Env("GITHUB_REPOSITORY")
-	githubRef := image.Env("GITHUB_REF_NAME")
+	githubRepo := os.Getenv("GITHUB_REPOSITORY")
+	githubRef := os.Getenv("GITHUB_REF_NAME")
 
-	if githubRepo.Value() != RootRepository {
+	if githubRepo != RootRepository {
 		fmt.Printf("\n👮 Publishing only runs on %s repo\n", RootRepository)
 		return image
 	}
 
-	if githubRef.Value() != MainBranch {
+	if githubRef != MainBranch {
 		fmt.Printf("\n👮 Publishing only runs on %s branch\n", MainBranch)
 		return image
 	}
@@ -90,11 +86,14 @@ func (image *Image) Publish(reference string) *Image {
 }
 
 func (image *Image) WithRegistryAuth() *Image {
+	ghcrPassword := os.Getenv("GHCR_PASSWORD")
+	ghcrPasswordSecret := image.dag.SetSecret("GCHR_PASSWORD", ghcrPassword)
+
 	image.container = image.container.
 		WithRegistryAuth(
 			"ghcr.io",
-			image.Env("GHCR_USERNAME").Value(),
-			image.Env("GHCR_PASSWORD").Secret(),
+			os.Getenv("GHCR_USERNAME"),
+			ghcrPasswordSecret,
 		)
 
 	return image

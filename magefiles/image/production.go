@@ -7,7 +7,6 @@ import (
 
 	"dagger.io/dagger"
 	"github.com/magefile/mage/sh"
-	"github.com/thechangelog/changelog.com/magefiles/env"
 )
 
 func (image *Image) Production() *Image {
@@ -106,14 +105,14 @@ func (image *Image) WithProductionLabels() *Image {
 }
 
 func (image *Image) ProductionImageRef() string {
-	imageOwner := image.Env("IMAGE_OWNER")
-	if imageOwner.Value() == "" {
-		imageOwner = image.Env("GITHUB_ACTOR")
+	imageOwner := os.Getenv("IMAGE_OWNER")
+	if imageOwner == "" {
+		imageOwner = os.Getenv("GITHUB_ACTOR")
 	}
 
 	return fmt.Sprintf(
 		"ghcr.io/%s/changelog-prod:%s",
-		imageOwner.Value(),
+		imageOwner,
 		gitSHA(),
 	)
 }
@@ -122,9 +121,9 @@ func (image *Image) ProductionImageRef() string {
 // 1. Upload legacy assets
 // 2. /wp-content/** redirect
 func (image *Image) UploadStaticAssets() *Image {
-	R2_API_HOST := env.Get(image.ctx, image.dag.Host(), "R2_API_HOST").Secret()
-	R2_ACCESS_KEY_ID := env.Get(image.ctx, image.dag.Host(), "R2_ACCESS_KEY_ID").Secret()
-	R2_SECRET_ACCESS_KEY := env.Get(image.ctx, image.dag.Host(), "R2_SECRET_ACCESS_KEY").Secret()
+	R2_API_HOST := image.dag.SetSecret("R2_API_HOST", os.Getenv("R2_API_HOST"))
+	R2_ACCESS_KEY_ID := image.dag.SetSecret("R2_ACCESS_KEY_ID", os.Getenv("R2_ACCESS_KEY_ID"))
+	R2_SECRET_ACCESS_KEY := image.dag.SetSecret("R2_SECRET_ACCESS_KEY", os.Getenv("R2_SECRET_ACCESS_KEY"))
 
 	_, err := image.Production().
 		// 🤔 Why do we need to start the app - and therefore require the DB - to upload static assets?
@@ -144,7 +143,7 @@ func (image *Image) UploadStaticAssets() *Image {
 		WithExec([]string{
 			"mix", "changelog.static.upload",
 		}).
-		ExitCode(image.ctx)
+		Sync(image.ctx)
 
 	mustCreate(err)
 

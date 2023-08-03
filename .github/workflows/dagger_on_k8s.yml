@@ -5,7 +5,10 @@ on:
 
 jobs:
   run:
-    runs-on: self-hosted
+    runs-on: 
+      - self-hosted
+      - k8s
+      - dagger-08x
     continue-on-error: true
     steps:
       - name: "Checkout code..."

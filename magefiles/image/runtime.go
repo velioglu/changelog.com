@@ -2,6 +2,7 @@ package image
 
 import (
 	"fmt"
+	"os"
 )
 
 const (
@@ -9,9 +10,9 @@ const (
 )
 
 func (image *Image) RuntimeImageRef() string {
-	imageOwner := image.Env("IMAGE_OWNER").Value()
+	imageOwner := os.Getenv("IMAGE_OWNER")
 	if imageOwner == "" {
-		imageOwner = image.Env("GITHUB_ACTOR").Value()
+		imageOwner = os.Getenv("GITHUB_ACTOR")
 	}
 	// If we are not running in CI,
 	// and there is no explicit IMAGE_OWNER,

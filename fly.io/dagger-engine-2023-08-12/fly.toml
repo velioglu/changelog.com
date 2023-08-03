@@ -1,0 +1,28 @@
+# https://fly.io/docs/reference/configuration/
+
+app = "dagger-engine-2023-08-12"
+primary_region = "iad"
+
+kill_signal = "SIGINT"
+kill_timeout = 30
+
+[build]
+  image = "registry.dagger.io/engine:v0.8.2"
+
+[env]
+  _EXPERIMENTAL_DAGGER_SERVICES_DNS = "true"
+
+[mounts]
+  source = "dagger_engine_2023_08_12"
+  destination = "/var/lib/dagger"
+
+[processes]
+  dagger = "--addr tcp://0.0.0.0:8080"
+
+[checks]
+  [checks.grpc]
+    grace_period = "3s"
+    interval = "2s"
+    port = 8080
+    timeout = "1s"
+    type = "tcp"

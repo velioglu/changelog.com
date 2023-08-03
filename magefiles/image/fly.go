@@ -3,23 +3,25 @@ package image
 import (
 	"fmt"
 	"time"
+
+	"os"
 )
 
 func (image *Image) Deploy() *Image {
-	githubRepo := image.Env("GITHUB_REPOSITORY")
-	githubRef := image.Env("GITHUB_REF_NAME")
+	githubRepo := os.Getenv("GITHUB_REPOSITORY")
+	githubRef := os.Getenv("GITHUB_REF_NAME")
 
-	fmt.Printf("🔍 githubRepo: %s\n", githubRepo.Value())
-	fmt.Printf("🔍 githubRef: %s\n", githubRef.Value())
+	fmt.Printf("🔍 githubRepo: %s\n", githubRepo)
+	fmt.Printf("🔍 githubRef: %s\n", githubRef)
 
 	image = image.flyctl().app()
 
-	if githubRepo.Value() != RootRepository {
+	if githubRepo != RootRepository {
 		fmt.Printf("\n👮 Deploys only run on %s repo\n", RootRepository)
 		return image
 	}
 
-	if githubRef.Value() != MainBranch {
+	if githubRef != MainBranch {
 		fmt.Printf("\n👮 Deploys only run on %s branch\n", MainBranch)
 		return image
 	}
@@ -40,7 +42,7 @@ func (image *Image) DaggerStart() *Image {
 	image = image.flyctl().dagger()
 	var err error
 
-	primaryEngineMachineID := image.Env("FLY_PRIMARY_DAGGER_ENGINE_MACHINE_ID").Value()
+	primaryEngineMachineID := os.Getenv("FLY_PRIMARY_DAGGER_ENGINE_MACHINE_ID")
 	if primaryEngineMachineID == "" {
 		fmt.Printf(
 			"👮 Skip starting Dagger Engine, FLY_PRIMARY_ENGINE_MACHINE_ID env var is missing\n",
@@ -50,7 +52,7 @@ func (image *Image) DaggerStart() *Image {
 
 	image, err = image.startMachine(primaryEngineMachineID)
 	if err != nil {
-		secondaryEngineMachineID := image.Env("FLY_SECONDARY_DAGGER_ENGINE_MACHINE_ID").Value()
+		secondaryEngineMachineID := os.Getenv("FLY_SECONDARY_DAGGER_ENGINE_MACHINE_ID")
 		if secondaryEngineMachineID == "" {
 			fmt.Printf(
 				"👮 Skip starting Dagger Engine, FLY_SECONDARY_DAGGER_ENGINE_MACHINE_ID env var is missing\n",
@@ -69,7 +71,7 @@ func (image *Image) DaggerStop() *Image {
 	image = image.flyctl().dagger()
 	var err error
 
-	primaryEngineMachineID := image.Env("FLY_PRIMARY_DAGGER_ENGINE_MACHINE_ID").Value()
+	primaryEngineMachineID := os.Getenv("FLY_PRIMARY_DAGGER_ENGINE_MACHINE_ID")
 	if primaryEngineMachineID == "" {
 		fmt.Printf(
 			"👮 Skip stopping Dagger Engine, FLY_PRIMARY_ENGINE_MACHINE_ID env var is missing\n",
@@ -78,26 +80,28 @@ func (image *Image) DaggerStop() *Image {
 	}
 
 	image, err = image.stopMachine(primaryEngineMachineID)
-	if err != nil {
-		secondaryEngineMachineID := image.Env("FLY_SECONDARY_DAGGER_ENGINE_MACHINE_ID").Value()
-		if secondaryEngineMachineID == "" {
-			fmt.Printf(
-				"👮 Skip stopping Dagger Engine, FLY_SECONDARY_DAGGER_ENGINE_MACHINE_ID env var is missing\n",
-			)
-			return image
-		}
+	mustCreate(err)
 
-		image, err = image.stopMachine(secondaryEngineMachineID)
-		mustCreate(err)
+	secondaryEngineMachineID := os.Getenv("FLY_SECONDARY_DAGGER_ENGINE_MACHINE_ID")
+	if secondaryEngineMachineID == "" {
+		fmt.Printf(
+			"👮 Skip stopping Dagger Engine, FLY_SECONDARY_DAGGER_ENGINE_MACHINE_ID env var is missing\n",
+		)
+		return image
 	}
+
+	image, err = image.stopMachine(secondaryEngineMachineID)
+	mustCreate(err)
 
 	return image
 }
 
 func (image *Image) flyctl() *Image {
+	FLY_API_TOKEN := image.dag.SetSecret("FLY_API_TOKEN", os.Getenv("FLY_API_TOKEN"))
+
 	image.container = image.NewContainer().
 		From(image.flyctlImageRef()).
-		WithSecretVariable("FLY_API_TOKEN", image.Env("FLY_API_TOKEN").Secret()).
+		WithSecretVariable("FLY_API_TOKEN", FLY_API_TOKEN).
 		WithExec([]string{
 			"version",
 		})
@@ -114,7 +118,7 @@ func (image *Image) app() *Image {
 
 func (image *Image) dagger() *Image {
 	image.container = image.container.
-		WithMountedFile("fly.toml", image.dag.Host().Directory("fly.io/dagger-engine-2023-05-20").File("fly.toml"))
+		WithMountedFile("fly.toml", image.dag.Host().Directory("fly.io/dagger-engine-2023-08-12").File("fly.toml"))
 
 	return image
 }
