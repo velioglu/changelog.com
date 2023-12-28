@@ -1,0 +1,2 @@
+export OP_SERVICE_ACCOUNT_TOKEN="$(op read op://changelog/op.changelog-2023-12-26/credential --account changelog.1password.com --cache)"
+export EARTHLY_SECRETS="OP_SERVICE_ACCOUNT_TOKEN"

@@ -1,0 +1,78 @@
+# Tested with earthly v0.7.22 on macOS v12.7.1 x86_64
+
+VERSION --global-cache 0.7
+
+ARG --global org=changelog
+ARG --global app=changelog-2023-12-17
+
+op:
+  # https://hub.docker.com/r/1password/op/tags
+  FROM 1password/op:2.24.0@sha256:27b3aea82309eb595b632863a2fcf0f9ff12b23eade50ee4e070250f361d392c
+  SAVE ARTIFACT /usr/local/bin/op
+
+flyctl-bin:
+  # https://hub.docker.com/r/flyio/flyctl/tags
+  FROM flyio/flyctl:v0.1.135@sha256:40456b77e09b6cb6584ddd97de5f691b260e54f01c04d92b8db73ad5a1bd9e52
+  SAVE ARTIFACT /flyctl
+
+alpine:
+  # https://hub.docker.com/_/alpine/tags
+  FROM alpine:3.18.5@sha256:d695c3de6fcd8cfe3a6222b0358425d40adfd129a8a47c3416faff1a8aece389
+
+# We need Alpine so that we can run interactive commands in this container,
+# such as adding secrets, debugging interactively, etc.
+flyctl:
+  FROM +alpine
+  COPY +flyctl-bin/flyctl /usr/local/bin/flyctl
+  RUN flyctl version
+  COPY +op/op /usr/local/bin/op
+  RUN apk add ca-certificates && update-ca-certificates
+  RUN op --version
+
+postgres:
+  # https://hub.docker.com/_/postgres/tags
+  FROM postgres:16.1@sha256:ee5dc0b649c9322656a1ee2c5dce7ce17fa9b15d838e992ca43a8e0b108b098e
+  COPY +op/op /usr/local/bin/op
+  RUN apt-get update && apt-get install -y ca-certificates && update-ca-certificates
+  RUN op --version
+
+apps:
+  FROM +flyctl
+  RUN --no-cache --secret OP_SERVICE_ACCOUNT_TOKEN \
+    FLY_API_TOKEN=$(op read op://changelog/fly.services-2023-12-26/credential) \
+    flyctl apps list --org $org
+
+secrets:
+  FROM +flyctl
+  RUN --no-cache --secret OP_SERVICE_ACCOUNT_TOKEN \
+    FLY_API_TOKEN=$(op read op://changelog/fly.services-2023-12-26/credential) \
+    flyctl secrets list --app $app
+
+app:
+  FROM +flyctl
+  IF --secret OP_SERVICE_ACCOUNT_TOKEN ! FLY_API_TOKEN=$(op read op://changelog/fly.services-2023-12-26/credential) flyctl status --app $app
+    RUN --secret OP_SERVICE_ACCOUNT_TOKEN \
+      FLY_API_TOKEN=$(op read op://changelog/fly.services-2023-12-26/credential) \
+      flyctl apps create $app --org $org
+  END
+
+psql:
+  FROM +postgres
+  RUN --interactive --secret OP_SERVICE_ACCOUNT_TOKEN \
+    OP_SERVICE_ACCOUNT_TOKEN=$OP_SERVICE_ACCOUNT_TOKEN \
+    psql "$(op read op://changelog/neon.changelog-2023-12-09/url)"
+
+db.backup:
+  FROM +flyctl
+  ARG db=changelog-postgres-2023-07-31
+  RUN --secret OP_SERVICE_ACCOUNT_TOKEN \
+    FLY_API_TOKEN=$(op read op://changelog/fly.services-2023-12-26/credential) \
+    BACKUP_CMD="pg_dump $(op read op://changelog/app.changelog-2022-03-13/DB_URL) --verbose --compress=7 > /data/changelog.sql.gz" \
+    flyctl ssh console --app $db --command "$BACKUP_CMD"
+
+deploy:
+  BUILD +create
+
+# QUESTIONS:
+# 1. How can I read deps versions from the local .tool-versions file, assign to
+# variables & re-use? As an alternative to hard-coding versions multiple times.
