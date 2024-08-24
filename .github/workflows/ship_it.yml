@@ -29,7 +29,7 @@ jobs:
     secrets: inherit
 
   # As forks will not have access to our Fly.io,
-  # we fallback to GitHub default:
+  # we fallback to GitHub by default:
   dagger-on-github:
     if: ${{ !contains(vars.RUNS_ON, 'fly') }}
     uses: ./.github/workflows/dagger_on_github.yml
@@ -40,4 +40,10 @@ jobs:
   dagger-on-k8s:
     if: ${{ contains(vars.RUNS_ON, 'k8s') }}
     uses: ./.github/workflows/dagger_on_k8s.yml
+    secrets: inherit
+
+  # Trying a new backend
+  dagger-on-ubicloud:
+    if: ${{ contains(vars.RUNS_ON, 'ubicloud') }}
+    uses: ./.github/workflows/dagger_on_ubicloud.yml
     secrets: inherit
