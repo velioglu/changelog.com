@@ -42,8 +42,14 @@ jobs:
     uses: ./.github/workflows/dagger_on_k8s.yml
     secrets: inherit
 
-  # Trying a new backend
+  # Trying a new backend: https://www.ubicloud.com/docs/github-actions-integration/quickstart
   dagger-on-ubicloud:
     if: ${{ contains(vars.RUNS_ON, 'ubicloud') }}
     uses: ./.github/workflows/dagger_on_ubicloud.yml
+    secrets: inherit
+
+  # Trying a new backend: https://namespace.so/docs/getting-started/quickstart
+  dagger-on-namespace:
+    if: ${{ contains(vars.RUNS_ON, 'namespace') }}
+    uses: ./.github/workflows/dagger_on_namespace.yml
     secrets: inherit
