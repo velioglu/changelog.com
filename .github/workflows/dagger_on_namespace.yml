@@ -8,7 +8,7 @@ jobs:
     strategy:
       matrix:
         runner:
-          - namespace-profile-default
+          - namespace-profile-changelog
     runs-on: ${{ matrix.runner }}
     steps:
       - name: "Checkout code..."

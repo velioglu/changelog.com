@@ -8,11 +8,7 @@ jobs:
     strategy:
       matrix:
         runner:
-          - ubicloud-standard-2
           - ubicloud-standard-4
-          - ubicloud-standard-8
-          - ubicloud-standard-16
-          - ubicloud-standard-30
     runs-on: ${{ matrix.runner }}
     steps:
       - name: "Checkout code..."
