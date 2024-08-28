@@ -14,42 +14,12 @@ on:
 
 # All jobs have the same outcome. We define multiple for resiliency reasons.
 jobs:
-  # In thechangelog/changelog repository (a.k.a. upstream),
-  # this is the preferred default:
-  dagger-on-fly:
-    if: ${{ contains(vars.RUNS_ON, 'fly') }}
-    uses: ./.github/workflows/dagger_on_fly.yml
-    secrets: inherit
-
-  # When our Fly.io setup misbehaves, we want a fallback:
-  dagger-on-github-fallback:
-    needs: dagger-on-fly
-    if: ${{ failure() }}
-    uses: ./.github/workflows/dagger_on_github.yml
-    secrets: inherit
-
-  # As forks will not have access to our Fly.io,
-  # we fallback to GitHub by default:
-  dagger-on-github:
-    if: ${{ !contains(vars.RUNS_ON, 'fly') }}
-    uses: ./.github/workflows/dagger_on_github.yml
-    secrets: inherit
-
-  # This is an experimental job which only runs the CI part of our pipeline.
-  # In other words, this does not run CD, it does not deploy our app.
-  dagger-on-k8s:
-    if: ${{ contains(vars.RUNS_ON, 'k8s') }}
-    uses: ./.github/workflows/dagger_on_k8s.yml
-    secrets: inherit
-
   # Trying a new backend: https://www.ubicloud.com/docs/github-actions-integration/quickstart
   dagger-on-ubicloud:
-    if: ${{ contains(vars.RUNS_ON, 'ubicloud') }}
     uses: ./.github/workflows/dagger_on_ubicloud.yml
     secrets: inherit
 
-  # Trying a new backend: https://namespace.so/docs/getting-started/quickstart
   dagger-on-namespace:
-    if: ${{ contains(vars.RUNS_ON, 'namespace') }}
     uses: ./.github/workflows/dagger_on_namespace.yml
     secrets: inherit
+

@@ -5,27 +5,24 @@ on:
 
 jobs:
   run:
-    strategy:
-      matrix:
-        runner:
-          - namespace-profile-changelog
-    runs-on: ${{ matrix.runner }}
+    runs-on: namespace-profile-velioglu
     steps:
       - name: "Checkout code..."
-        uses: actions/checkout@v3
+        uses: namespacelabs/nscloud-checkout-action@v5
 
-      - name: Setup npm cache
-        uses: namespacelabs/nscloud-cache-action@v1
-        with:
-          path: |
-            ~/namespace-cache-home
-            ./namespace-cache-cwd
-            /namespace-cache-root
-
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: "1.20"
           cache-dependency-path: "magefiles/go.sum"
+
+      - name: "Provision Dagger with local cache"
+        run: |
+          docker run \
+            --name dagger-0-6-4 \
+            --detach --restart always \
+            --volume /cache/dagger-0-6-4:/var/lib/dagger \
+            --privileged \
+            registry.dagger.io/engine:v0.6.4
 
       - name: "Build, test, publish & deploy..."
         env:
@@ -39,9 +36,9 @@ jobs:
           R2_ASSETS_BUCKET: "${{ env.R2_ASSETS_BUCKET }}"
           OBAN_KEY_FINGERPRINT: "${{ secrets.OBAN_KEY_FINGERPRINT }}"
           OBAN_LICENSE_KEY: "${{ secrets.OBAN_LICENSE_KEY }}"
+          _EXPERIMENTAL_DAGGER_RUNNER_HOST: "docker-container://dagger-0-6-4"
         run: |
           cd magefiles
-          sleep 3600
           go run main.go -w ../ ci cd
 
       - name: "Announce deploy in #dev Slack..."
