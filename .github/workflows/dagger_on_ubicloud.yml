@@ -18,10 +18,10 @@ jobs:
       - name: root suid tar
         run: sudo chown root /bin/tar && sudo chmod u+s /bin/tar
     
-      - uses: ubicloud/cache@v4
+      - uses: actions/cache@v4
         with:
           path: /cache
-          key: ${{ runner.os }}-cachekey-${{ hashFiles('magefiles/go.mod') }}
+          key: ${{ runner.os }}-cachekey2-${{ hashFiles('magefiles/go.mod') }}
           restore-keys: |
             ${{ runner.os }}-docker-
 
