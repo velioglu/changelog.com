@@ -1,0 +1,24 @@
+name: Test ubuntu-2204
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubicloud-standard-2-arm
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Print kernel version
+        run: uname -mr
+
+      - name: Print OS version
+        run: lsb_release -a
+
+      - name: Print environment variables
+        run: printenv
+
+      - name: Print PATH
+        run: echo $PATH
